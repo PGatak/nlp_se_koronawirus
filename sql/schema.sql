@@ -1,0 +1,16 @@
+CREATE TABLE services(
+    service_id SERIAL PRIMARY KEY,
+    service TEXT UNIQUE,
+    start_url TEXT,
+    created_on TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE urls(
+    url_id SERIAL PRIMARY KEY,
+    service_id INTEGER REFERENCES services(service_id),
+    author TEXT,
+    publication_date DATE,
+    url TEXT UNIQUE,
+    koronawirus SMALLINT,
+    created_on TIMESTAMP DEFAULT NOW()
+);
