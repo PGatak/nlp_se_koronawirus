@@ -3,7 +3,7 @@ from psycopg2.extras import RealDictConnection
 import os
 
 
-DEFAULT_DSN = "dbname=%s" % os.environ.get("DBNAME", "nlp_se_sql")
+DEFAULT_DSN = "dbname=%s" % os.environ.get("DBNAME", "nlp_se_koronawisus_sql")
 
 
 def create_connection(dsn=DEFAULT_DSN):
