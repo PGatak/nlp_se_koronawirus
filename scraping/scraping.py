@@ -45,14 +45,11 @@ def extract_urls(text, current_service, current_url):
 
 
 
-def update_article(text, current_service, current_url, int_publication_date=20200811000):
+def update_article(text, current_service, current_url, int_publication_date=201906010000):
     #articles = []
     bs = BeautifulSoup(text, "lxml")
     container = bs.find(class_="main-content")
-    title = container.find("div", {"class": "title"}).h1
-    print(title)
-    aa_title = title.find_all(text=re.compile(r'(koronawirus|covid|epidemi|zakaże)', re.I))
-    print("The count is:", len(aa_title))
+
 
 
     article = container.find("article")
@@ -61,7 +58,6 @@ def update_article(text, current_service, current_url, int_publication_date=2020
     date = date_and_author_container.find(class_="h3 pub_time_date").text
     hours = date_and_author_container.find(class_="h3 pub_time_hours_minutes").text
     publication_date = date + " " + hours
-    print("STRING", publication_date)
     int_date = publication_date.replace("-", "").replace(" ", "").replace(":", "")
 
     if len(int_date) == 11:
@@ -69,7 +65,32 @@ def update_article(text, current_service, current_url, int_publication_date=2020
         #print(print("INT", int_date, "LEN", len(int_date)))
 
     if int(int_date) >= int_publication_date:
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        title = container.find("div", {"class": "title"}).h1
+        text_title = title.text
+        covid_regex_pattern = re.compile(r'(koronawirus|covid|epidemi|zakaże|pandemi|kwarantann|ozdrowieńc|zarazi|'
+                            r'obostrze|żółta strefa|czerwona strefa|zakażon)', re.I)
+        covid_regex = title.find_all(text=covid_regex_pattern)
+        koronawirus_in_title = len(covid_regex)
+
+        text = article.find_all("p")
+
+        article_text = []
+        for i in text:
+            article_text.append(i.text)
+
+        article_string_text = ",".join(article_text)
+        article_list_text = article_string_text.split()
+        #print(article_list_text)
+        word_counter = 0
+        for i in article_list_text:
+            if covid_regex_pattern.search(i):
+                word_counter += 1
+        print("%s\ncovid word counter %s" % (text_title, word_counter))
+
+
+
+        # print("The count is: %d" % (koronawirus_in_title))
+        # print("Correct date: %s"%(publication_date))
         try:
             author = date_and_author_container.find("a").text.strip()
         except:
@@ -80,9 +101,12 @@ def update_article(text, current_service, current_url, int_publication_date=2020
             except:
                 author = "No author"
 
-        print(publication_date, author)
-        articles.update_articles(connection, author, publication_date, current_url)
+        #print(publication_date, author)
 
+        articles.update_articles(connection, author, publication_date, current_url, koronawirus_in_title, text_title, word_counter)
+
+    elif int(int_date) < int_publication_date:
+        print("Incorrect date: %s" % (publication_date))
 
 def count_words_in_title():
     pass
@@ -118,7 +142,7 @@ if __name__ == "__main__":
                 next_url = link.attrs.get("href")
                 next_url_counter += 1
                 #print("page:", next_url_counter)
-                if next_url_counter == 2:
+                if next_url_counter == 150:
                     continue
                 next_url = urljoin(current_url, next_url)
                 start_urls.append({"service": current_service, "start_url": next_url})

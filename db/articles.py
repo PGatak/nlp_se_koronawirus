@@ -1,16 +1,22 @@
-def update_articles(connection, author, publication_date, current_url):
+def update_articles(connection, author, publication_date, current_url, koronawirus_in_title, text_title, word_counter):
     stmt = (
         """
         UPDATE urls
         SET author = %(author)s,
-            publication_date = %(publication_date)s
+            publication_date = %(publication_date)s,
+            koronawirus_in_title = %(koronawirus_in_title)s,
+            koronawirus_in_text = %(word_counter)s,
+            title = %(text_title)s
         WHERE url = %(current_url)s
         """
     )
     with connection.cursor() as cur:
         record = {"author": author,
                   "publication_date": publication_date,
-                  "current_url": current_url}
+                  "current_url": current_url,
+                  "koronawirus_in_title": koronawirus_in_title,
+                  "word_counter": word_counter,
+                  "text_title": text_title}
         cur.execute(stmt, record)
         cur.connection.commit()
         return cur.fetchall()

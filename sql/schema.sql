@@ -11,6 +11,7 @@ CREATE TABLE urls(
     author TEXT,
     publication_date TIMESTAMP,
     url TEXT UNIQUE,
+    title TEXT,
     koronawirus_in_text SMALLINT,
     koronawirus_in_title SMALLINT,
     created_on TIMESTAMP DEFAULT NOW()
