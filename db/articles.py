@@ -52,3 +52,15 @@ def get_articles_grouped_by_author(connection, name):
         cur.execute(stmt, dict(name=name))
         #cur.connection.commit()
         return cur.fetchall()
+
+def get_articles(connection):
+    stmt = (
+        """
+        SELECT *
+        FROM urls
+        """
+    )
+
+    with connection.cursor() as cur:
+        cur.execute(stmt)
+        return cur.fetchall()
