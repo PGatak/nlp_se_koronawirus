@@ -61,8 +61,8 @@ def update_article(text, current_service, current_url, int_publication_date=2020
         title = container.find("div", {"class": "title"}).h1
         text_title = title.text
         covid_regex_pattern = re.compile(r'(koronawirus|covid|epidemi|zakaże|pandemi|kwarantann|ozdrowieńc|zarazi|'
-                                         r'obostrze|żółta strefa|czerwona strefa|zakażon|zaraże|odkaża|'
-                                         r'dezynfek)', re.I)
+                                         r'obostrze|żółta strefa|czerwona strefa|zakażon|zaraże|odkaża|zakażn|maseczk|'
+                                         r'maseczek|dezynfek)', re.I)
         covid_regex = title.find_all(text=covid_regex_pattern)
         koronawirus_in_title = len(covid_regex)
 
