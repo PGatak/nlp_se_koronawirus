@@ -125,8 +125,8 @@ if __name__ == "__main__":
                 next_url = link.attrs.get("href")
                 next_url_counter += 1
                 print("%s page: %s" % (current_service, next_url_counter))
-                if next_url_counter == 200:
-                    continue
+                # if next_url_counter == 200:
+                #     continue
                 next_url = urljoin(current_url, next_url)
                 start_urls.append({"service": current_service, "start_url": next_url})
         except Exception as e:
