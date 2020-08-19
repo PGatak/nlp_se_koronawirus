@@ -60,25 +60,49 @@ def update_article(text, current_service, current_url, int_publication_date=2020
     if int(int_date) >= int_publication_date:
         title = container.find("div", {"class": "title"}).h1
         text_title = title.text
-        covid_regex_pattern = re.compile(r'(koronawirus|covid|epidemi|zakaże|pandemi|kwarantann|ozdrowieńc|zarazi|'
-                                         r'obostrze|żółta strefa|czerwona strefa|zakażon|zaraże|odkaża|zakażn|maseczk|'
-                                         r'maseczek|dezynfek)', re.I)
+        covid_regex_pattern = re.compile(r"(koronawirus|covid|epidemi|zakaże|pandemi|kwarantann|ozdrowieńc|zarazi|"
+                                         r"obostrze|żółta strefa|czerwona strefa|zakażon|zaraże|odkaża|zakażn|"
+                                         r"masecz(ka|ki|ek|kami)? ochronn(a|e|ych|ymi)|"
+                                         r"mas(ka|ki|ek|kami)? ochronn(a|e|ych|ymi)|"
+                                         r"rękawiczk(a|i|ami)? ochronn(a|e|ymi)|"
+                                         r"dezynfek|sars)", re.I)
+
         covid_regex = title.find_all(text=covid_regex_pattern)
         koronawirus_in_title = len(covid_regex)
 
         text = article.find_all("p")
 
         article_text = []
+
+        question_mark_regex_pattern = re.compile(r'.*\?.*')
+        exclamation_mark_regex_pattern = re.compile(r'.*!.*')
+
         for i in text:
             article_text.append(i.text)
 
         article_string_text = ",".join(article_text)
         article_list_text = article_string_text.split()
-        word_counter = 0
+        covid_word_counter = 0
+        all_word_counter = 0
+        question_mark_counter = 0
+        exclamation_mark_counter = 0
         for i in article_list_text:
             if covid_regex_pattern.search(i):
-                word_counter += 1
-        print("%s\t%s\t%s\tcovid word counter %s" % (date, text_title[:60], koronawirus_in_title, word_counter))
+                covid_word_counter += 1
+            if question_mark_regex_pattern.search(i):
+                question_mark_counter += 1
+            if exclamation_mark_regex_pattern.search(i):
+                exclamation_mark_counter += 1
+
+            all_word_counter += 1
+        print(article_list_text, "\n\n\n")
+        print("%s\t%s\t%s\tcovid word counter %s, all %s\nquestion_mark_counter: %s\n"
+              "exclamation_mark_counter: %s" % (date, text_title[:60],
+                                                koronawirus_in_title,
+                                                covid_word_counter,
+                                                all_word_counter,
+                                                question_mark_counter,
+                                                exclamation_mark_counter))
 
         try:
             author = date_and_author_container.find("a").text.strip()
@@ -92,7 +116,7 @@ def update_article(text, current_service, current_url, int_publication_date=2020
                 author = "No author"
 
         articles.update_articles(connection, author, publication_date, current_url, koronawirus_in_title, text_title,
-                                 word_counter)
+                                 covid_word_counter, all_word_counter, question_mark_counter, exclamation_mark_counter)
 
     elif int(int_date) < int_publication_date:
         print("Incorrect date: %s" % date)
@@ -125,8 +149,8 @@ if __name__ == "__main__":
                 next_url = link.attrs.get("href")
                 next_url_counter += 1
                 print("%s page: %s" % (current_service, next_url_counter))
-                # if next_url_counter == 200:
-                #     continue
+                if next_url_counter == 2:
+                    continue
                 next_url = urljoin(current_url, next_url)
                 start_urls.append({"service": current_service, "start_url": next_url})
         except Exception as e:

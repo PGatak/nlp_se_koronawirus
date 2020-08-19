@@ -14,5 +14,8 @@ CREATE TABLE urls(
     title TEXT,
     koronawirus_in_text SMALLINT,
     koronawirus_in_title SMALLINT,
+    all_words SMALLINT,
+    question_mark SMALLINT,
+    exclamation_mark SMALLINT,
     created_on TIMESTAMP DEFAULT NOW()
 );

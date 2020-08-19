@@ -1,12 +1,16 @@
-def update_articles(connection, author, publication_date, current_url, koronawirus_in_title, text_title, word_counter):
+def update_articles(connection, author, publication_date, current_url, koronawirus_in_title, text_title,
+                    covid_word_counter, all_word_counter, question_mark_counter, exclamation_mark_counter):
     stmt = (
         """
         UPDATE urls
         SET author = %(author)s,
             publication_date = %(publication_date)s,
             koronawirus_in_title = %(koronawirus_in_title)s,
-            koronawirus_in_text = %(word_counter)s,
-            title = %(text_title)s
+            koronawirus_in_text = %(covid_word_counter)s,
+            title = %(text_title)s,
+            all_words = %(all_word_counter),
+            question_mark = %(question_mark_counter),
+            exclamation_mark = %(exclamation_mark_counter)
         WHERE url = %(current_url)s
         """
     )
@@ -15,8 +19,11 @@ def update_articles(connection, author, publication_date, current_url, koronawir
                   "publication_date": publication_date,
                   "current_url": current_url,
                   "koronawirus_in_title": koronawirus_in_title,
-                  "word_counter": word_counter,
-                  "text_title": text_title}
+                  "covid_word_counter": covid_word_counter,
+                  "text_title": text_title,
+                  "all_word_counter": all_word_counter,
+                  "question_mark_counter": question_mark_counter,
+                  "exclamation_mark_counter": exclamation_mark_counter}
         cur.execute(stmt, record)
         cur.connection.commit()
         return cur.fetchall()
