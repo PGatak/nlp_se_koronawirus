@@ -95,7 +95,7 @@ def update_article(text, current_service, current_url, int_publication_date=2020
                 exclamation_mark_counter += 1
 
             all_word_counter += 1
-        print(article_list_text, "\n\n\n")
+        #print(article_list_text, "\n\n\n")
         print("%s\t%s\t%s\tcovid word counter %s, all %s\nquestion_mark_counter: %s\n"
               "exclamation_mark_counter: %s" % (date, text_title[:60],
                                                 koronawirus_in_title,
@@ -149,7 +149,7 @@ if __name__ == "__main__":
                 next_url = link.attrs.get("href")
                 next_url_counter += 1
                 print("%s page: %s" % (current_service, next_url_counter))
-                if next_url_counter == 2:
+                if next_url_counter == 180:
                     continue
                 next_url = urljoin(current_url, next_url)
                 start_urls.append({"service": current_service, "start_url": next_url})

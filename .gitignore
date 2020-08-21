@@ -3,3 +3,5 @@
 *.odt
 *.odt*
 *ipynb_*
+*.pdf
+*.csv

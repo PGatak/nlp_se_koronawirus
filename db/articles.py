@@ -8,9 +8,9 @@ def update_articles(connection, author, publication_date, current_url, koronawir
             koronawirus_in_title = %(koronawirus_in_title)s,
             koronawirus_in_text = %(covid_word_counter)s,
             title = %(text_title)s,
-            all_words = %(all_word_counter),
-            question_mark = %(question_mark_counter),
-            exclamation_mark = %(exclamation_mark_counter)
+            all_words = %(all_word_counter)s,
+            question_mark = %(question_mark_counter)s,
+            exclamation_mark = %(exclamation_mark_counter)s
         WHERE url = %(current_url)s
         """
     )
