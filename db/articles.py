@@ -60,6 +60,20 @@ def get_articles_grouped_by_author(connection, name):
         #cur.connection.commit()
         return cur.fetchall()
 
+
+def get_articles_grouped_by_publication_month(connection, name):
+    stmt = (
+        """
+        SELECT url
+        FROM urls
+        WHERE publication_month = %(name)s
+        """
+    )
+
+    with connection.cursor() as cur:
+        cur.execute(stmt, dict(name=name))
+        return cur.fetchall()
+
 def get_articles(connection):
     stmt = (
         """
