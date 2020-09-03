@@ -6,6 +6,6 @@
 *.pdf
 *.csv
 *.pkl
-transcripts/
 *.txt
-
+*.txt
+*.png

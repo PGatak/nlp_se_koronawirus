@@ -16,7 +16,7 @@ UA = (
 )
 session = requests.Session()
 session.headers.update({"User-agent": UA})
-TIMEOUT = 30
+TIMEOUT = 60
 
 connection = create_connection()
 
@@ -47,9 +47,20 @@ def update_article(text, current_service, current_url, int_publication_date=2020
     bs = BeautifulSoup(text, "lxml")
     container = bs.find(class_="main-content")
     article = container.find("article")
-    article.find("p", {"class": "playerBoard__text playerBoard__text--icon"}).decompose()
-    article.find("p", {"class": "playerBoard__text playerBoard__title"}).decompose()
-    article.find("p", {"class": "playerBoard__text"}).decompose()
+    try:
+        article.find("p", {"class": "playerBoard__text playerBoard__text--icon"}).decompose()
+    except:
+        print("NO CLASS: playerBoard__text playerBoard__text--icon")
+
+    try:
+        article.find("p", {"class": "playerBoard__text playerBoard__title"}).decompose()
+    except:
+        print("NO CLASS: playerBoard__text playerBoard__title")
+
+    try:
+        article.find("p", {"class": "playerBoard__text"}).decompose()
+    except:
+        print("NO CLASS: playerBoard__text")
 
     date_and_author_container = article.find("div", ({"class": "neck display-flex"}))
     date = date_and_author_container.find(class_="h3 pub_time_date").text
@@ -83,18 +94,19 @@ def update_article(text, current_service, current_url, int_publication_date=2020
         for i in text:
             article_text.append(i.text)
 
+        # print(article_text)
         article_string_text = ",".join(article_text)
         article_list_text = article_string_text.split(",")
         article_string_text = ".".join(article_list_text)
         article_list_text = article_string_text.split(".")
         article_string_text = "".join(article_list_text)
         article_list_text = article_string_text.split()
+        # print(article_list_text)
         covid_word_counter = 0
         all_word_counter = 0
         question_mark_counter = 0
         exclamation_mark_counter = 0
         for i in article_list_text:
-            print(i)
             if covid_regex_pattern.search(i):
                 covid_word_counter += 1
             if question_mark_regex_pattern.search(i):
@@ -159,9 +171,9 @@ if __name__ == "__main__":
                 next_url = link.attrs.get("href")
                 next_url_counter += 1
                 print("%s page: %s" % (current_service, next_url_counter))
-                if next_url_counter == 1:
+                # if next_url_counter == 300:
+                #     continue
 
-                    continue
                 next_url = urljoin(current_url, next_url)
                 start_urls.append({"service": current_service, "start_url": next_url})
         except Exception as e:
