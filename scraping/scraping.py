@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import re
 import requests
+import string
 from urllib.parse import urljoin
 from db import (
     articles,
@@ -43,10 +44,18 @@ def extract_urls(text, current_service, current_url):
             print("NO URL")
 
 
-def update_article(text, current_service, current_url, int_publication_date=202001010000):
-    bs = BeautifulSoup(text, "lxml")
-    container = bs.find(class_="main-content")
-    article = container.find("article")
+def list_into_words(article_text: list):
+    article_string_text = ",".join(article_text)
+    article_list_text = article_string_text.split(",")
+    article_string_text = ".".join(article_list_text)
+    article_list_text = article_string_text.split(".")
+    article_string_text = "".join(article_list_text)
+    article_list_text = article_string_text.split()
+
+    return article_list_text
+
+
+def dismiss_the_ad_paragraphs(article):
     try:
         article.find("p", {"class": "playerBoard__text playerBoard__text--icon"}).decompose()
     except:
@@ -62,6 +71,16 @@ def update_article(text, current_service, current_url, int_publication_date=2020
     except:
         print("NO CLASS: playerBoard__text")
 
+    return article
+
+
+def update_article(text, current_url, end_date=202001010000):
+    bs = BeautifulSoup(text, "lxml")
+    container = bs.find(class_="main-content")
+    article = container.find("article")
+
+    dismiss_the_ad_paragraphs(article)
+
     date_and_author_container = article.find("div", ({"class": "neck display-flex"}))
     date = date_and_author_container.find(class_="h3 pub_time_date").text
     hours = date_and_author_container.find(class_="h3 pub_time_hours_minutes").text
@@ -71,7 +90,10 @@ def update_article(text, current_service, current_url, int_publication_date=2020
     if len(int_date) == 11:
         int_date = int_date[:8] + "0" + int_date[8:]
 
-    if int(int_date) >= int_publication_date:
+    if int(int_date) < end_date:
+        print("Incorrect date: %s" % date)
+
+    elif int(int_date) >= end_date:
         title = container.find("div", {"class": "title"}).h1
         text_title = title.text
         covid_regex_pattern = re.compile(r"(koronawirus|covid|epidemi|zakaże|pandemi|kwarantann|ozdrowieńc|zarazi|"
@@ -91,47 +113,40 @@ def update_article(text, current_service, current_url, int_publication_date=2020
         question_mark_regex_pattern = re.compile(r'.*\?.*')
         exclamation_mark_regex_pattern = re.compile(r'.*!.*')
 
-        for i in text:
-            article_text.append(i.text)
+        for item in text:
+            article_text.append(item.text)
 
-        # print(article_text)
-        article_string_text = ",".join(article_text)
-        article_list_text = article_string_text.split(",")
-        article_string_text = ".".join(article_list_text)
-        article_list_text = article_string_text.split(".")
-        article_string_text = "".join(article_list_text)
-        article_list_text = article_string_text.split()
-        # print(article_list_text)
+        words_list = list_into_words(article_text)
+
         covid_word_counter = 0
         all_word_counter = 0
         question_mark_counter = 0
         exclamation_mark_counter = 0
-        for i in article_list_text:
-            if covid_regex_pattern.search(i):
+        for word in words_list:
+            if covid_regex_pattern.search(word):
                 covid_word_counter += 1
-            if question_mark_regex_pattern.search(i):
+            if question_mark_regex_pattern.search(word):
                 question_mark_counter += 1
-            if exclamation_mark_regex_pattern.search(i):
+            if exclamation_mark_regex_pattern.search(word):
                 exclamation_mark_counter += 1
 
             all_word_counter += 1
-            if i == "-":
+
+            if word in string.punctuation:
                 all_word_counter -= 1
-        #print(article_list_text, "\n\n\n")
-        print("%s\t%s\t%s\tcovid word counter %s, all %s\nquestion_mark_counter: %s\n"
-              "exclamation_mark_counter: %s" % (date, text_title[:60],
-                                                koronawirus_in_title,
-                                                covid_word_counter,
-                                                all_word_counter,
-                                                question_mark_counter,
-                                                exclamation_mark_counter))
+
+        print(f"{date},"
+              f"{text_title[:60]},"
+              f"covid in title: {koronawirus_in_title},"
+              f"covid word counter: {covid_word_counter},"
+              f"all words: {all_word_counter},"
+              f"question mark: {question_mark_counter},"
+              f"exclamation mark: {exclamation_mark_counter}")
 
         try:
             author = date_and_author_container.find("a").text.strip()
 
         except:
-            author = "No author"
-        if author == "No author":
             try:
                 author = date_and_author_container.find_all("span")[4].text.strip()
             except:
@@ -139,9 +154,6 @@ def update_article(text, current_service, current_url, int_publication_date=2020
 
         articles.update_articles(connection, author, publication_date, current_url, koronawirus_in_title, text_title,
                                  covid_word_counter, all_word_counter, question_mark_counter, exclamation_mark_counter)
-
-    elif int(int_date) < int_publication_date:
-        print("Incorrect date: %s" % date)
 
 
 if __name__ == "__main__":
@@ -171,8 +183,8 @@ if __name__ == "__main__":
                 next_url = link.attrs.get("href")
                 next_url_counter += 1
                 print("%s page: %s" % (current_service, next_url_counter))
-                # if next_url_counter == 300:
-                #     continue
+                if next_url_counter == 2:
+                    continue
 
                 next_url = urljoin(current_url, next_url)
                 start_urls.append({"service": current_service, "start_url": next_url})
@@ -189,7 +201,7 @@ if __name__ == "__main__":
 
         try:
             response = session.get(current_url, timeout=TIMEOUT)
-            update_article(response.text, current_service, current_url)
+            update_article(response.text, current_url)
 
         except Exception as e:
             print(e)
