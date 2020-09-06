@@ -22,7 +22,9 @@ sw_string = 'a aby ach acz aczkolwiek aj albo ale alez ależ ani az aż bardziej
       ' żadna żadne żadnych że żeby polecany artykuł zobacz supports please video web html browser' \
       ' this enable javascript consider nn and upgrading thatn latek latka marca to view this mówi' \
       ' super express pw kiedy proc html videon stycznia lutego min kwietnia maja czerwca lipca' \
-      ' sierpnia woj pw dodaje lublinie na lubelszczyźnie'
+      ' sierpnia woj pw dodaje lublinie na lubelszczyźnie mężczyzna osób pw św parafii pw czytaj' \
+      ' super lublina woj lubelskim kobieta dzieci woj lubelskie polsce należy ma terenie polski' \
+      ' przy ul na terenie później'
 
 
 def Convert(string):
