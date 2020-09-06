@@ -44,5 +44,7 @@ Run the Jupyter Notebook file "data_analysis_and_visualization.ipynb". You will 
 - The article with the most words,
 - Question mark and exclamation mark sum
 
+**Step 6:**
+Run the Jupyter Notebook file "nlp_cleaning.ipynb". 
 
 
