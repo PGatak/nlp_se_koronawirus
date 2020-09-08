@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import re
 import requests
 import string
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 from db import (
     articles,
     create_connection,
@@ -28,20 +28,19 @@ def extract_urls(text, current_service, current_url):
 
     items = container.find_all("a")
     for item in items:
+        url = item.attrs.get("href", "")
+        parsed = urlparse(url)
+        (domain, *port) = parsed.netloc.split(":")
+        domain = domain.lower()
+        if domain == "lublin.se.pl":
+            url = urljoin(current_url, url)
+            url_components = {"url": url, "service": current_service}
+            urls.add_urls(connection, url_components)
+        elif domain == "www.se.pl" and parsed.path == "/lublin":
+            url = urljoin(current_url, url)
+            url_components = {"url": url, "service": current_service}
+            urls.add_urls(connection, url_components)
 
-        try:
-            url = item.attrs.get("href", "")
-
-            if url.startswith("//lublin.se"):
-                url = urljoin(current_url, url)
-                url_components = {"url": url, "service": current_service}
-                urls.add_urls(connection, url_components)
-            elif url.startswith("//www.se.pl/lublin"):
-                url = urljoin(current_url, url)
-                url_components = {"url": url, "service": current_service}
-                urls.add_urls(connection, url_components)
-        except:
-            print("NO URL")
 
 
 def list_into_words(article_text: list):
