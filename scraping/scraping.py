@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from datetime import datetime
 import re
 import requests
 import string
@@ -65,26 +66,24 @@ def dismiss_the_ad_paragraphs(article):
     return article
 
 
-def update_article(text, current_url, end_date=202001010000):
+def parse_article(text, current_url, end_date=datetime(2020, 1, 1)):
     bs = BeautifulSoup(text, "lxml")
     container = bs.find(class_="main-content")
     article = container.find("article")
 
     dismiss_the_ad_paragraphs(article)
 
-    date_and_author_container = article.find("div", ({"class": "neck display-flex"}))
+    date_and_author_container = article.find(
+        "div",
+        {"class": "neck display-flex"}
+    )
     date = date_and_author_container.find(class_="h3 pub_time_date").text
-    hours = date_and_author_container.find(class_="h3 pub_time_hours_minutes").text
-    publication_date = date + " " + hours
-    int_date = publication_date.replace("-", "").replace(" ", "").replace(":", "")
+    date = datetime.strptime(date, "%Y-%m-%d")
 
-    if len(int_date) == 11:
-        int_date = int_date[:8] + "0" + int_date[8:]
-
-    if int(int_date) < end_date:
+    if date < end_date:
         print("Incorrect date: %s" % date)
 
-    elif int(int_date) >= end_date:
+    elif date >= end_date:
         title = container.find("div", {"class": "title"}).h1
         text_title = title.text
         covid_regex_pattern = re.compile(r"(koronawirus|covid|epidemi|zakaże|pandemi|kwarantann|ozdrowieńc|zarazi|"
@@ -143,7 +142,7 @@ def update_article(text, current_url, end_date=202001010000):
             except:
                 author = "No author"
 
-        articles_api.update_articles(connection, author, publication_date, current_url, koronawirus_in_title, text_title,
+        articles_api.update_articles(connection, author, date, current_url, koronawirus_in_title, text_title,
                                  covid_word_counter, all_word_counter, question_mark_counter, exclamation_mark_counter)
 
 
@@ -174,7 +173,7 @@ if __name__ == "__main__":
                 next_url = link.attrs.get("href")
                 next_url_counter += 1
                 print("%s page: %s" % (current_service, next_url_counter))
-                if next_url_counter == 2:
+                if next_url_counter == 2000:
                     continue
 
                 next_url = urljoin(current_url, next_url)

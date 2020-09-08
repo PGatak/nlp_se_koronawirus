@@ -7,7 +7,8 @@ CREATE TABLE services(
 
 CREATE TABLE urls(
     url_id SERIAL PRIMARY KEY,
-    service_id INTEGER REFERENCES services(service_id),
+    service_id INTEGER REFERENCES services(service_id)
+                ON UPDATE CASCADE ON DELETE CASCADE,
     author TEXT,
     publication_date TIMESTAMP,
     url TEXT UNIQUE,
