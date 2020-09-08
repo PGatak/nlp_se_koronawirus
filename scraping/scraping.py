@@ -4,10 +4,10 @@ import requests
 import string
 from urllib.parse import urljoin, urlparse
 from db import (
-    articles,
     create_connection,
-    services,
-    urls
+    articles as articles_api,
+    services as services_api,
+    urls as urls_api
 )
 from start_urls import all_start_urls
 
@@ -25,7 +25,6 @@ connection = create_connection()
 def extract_urls(text, current_service, current_url):
     bs = BeautifulSoup(text, "lxml")
     container = bs.find(class_="gl_plugin listing")
-
     items = container.find_all("a")
     for item in items:
         url = item.attrs.get("href", "")
@@ -35,12 +34,11 @@ def extract_urls(text, current_service, current_url):
         if domain == "lublin.se.pl":
             url = urljoin(current_url, url)
             url_components = {"url": url, "service": current_service}
-            urls.add_urls(connection, url_components)
+            urls_api.add_urls(connection, url_components)
         elif domain == "www.se.pl" and parsed.path == "/lublin":
             url = urljoin(current_url, url)
             url_components = {"url": url, "service": current_service}
-            urls.add_urls(connection, url_components)
-
+            urls_api.add_urls(connection, url_components)
 
 
 def list_into_words(article_text: list):
@@ -151,13 +149,13 @@ def update_article(text, current_url, end_date=202001010000):
             except:
                 author = "No author"
 
-        articles.update_articles(connection, author, publication_date, current_url, koronawirus_in_title, text_title,
+        articles_api.update_articles(connection, author, publication_date, current_url, koronawirus_in_title, text_title,
                                  covid_word_counter, all_word_counter, question_mark_counter, exclamation_mark_counter)
 
 
 if __name__ == "__main__":
-    services.add_services(connection, all_start_urls)
-    start_urls = urls.get_start_urls(connection)
+    services_api.add_services(connection, all_start_urls)
+    start_urls = urls_api.get_start_urls(connection)
     extracted_articles = []
     next_url_counter = 0
 
@@ -191,7 +189,7 @@ if __name__ == "__main__":
             print(e)
             continue
 
-    urls = urls.get_urls(connection)
+    urls = urls_api.get_urls(connection)
 
     while urls:
         task = urls.pop(0)
