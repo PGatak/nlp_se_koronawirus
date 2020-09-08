@@ -53,21 +53,15 @@ def list_into_words(article_text: list):
 
 
 def dismiss_the_ad_paragraphs(article):
+    css_classes = [
+        "playerBoard__text playerBoard__text--icon",
+        "playerBoard__text playerBoard__title",
+        "playerBoard__text",
+    ]
     try:
-        article.find("p", {"class": "playerBoard__text playerBoard__text--icon"}).decompose()
-    except:
-        print("NO CLASS: playerBoard__text playerBoard__text--icon")
-
-    try:
-        article.find("p", {"class": "playerBoard__text playerBoard__title"}).decompose()
-    except:
-        print("NO CLASS: playerBoard__text playerBoard__title")
-
-    try:
-        article.find("p", {"class": "playerBoard__text"}).decompose()
-    except:
-        print("NO CLASS: playerBoard__text")
-
+        [article.find("p", {"class": cls}).decompose() for cls in css_classes]
+    except AttributeError as e:
+        print("NO CLASS:", e)
     return article
 
 
