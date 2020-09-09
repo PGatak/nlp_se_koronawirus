@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
+import psycopg2
 import re
 import requests
 import string
@@ -29,6 +30,20 @@ COVID_REGEX_PATTERN = re.compile(
 )
 
 connection = create_connection()
+
+
+class Article:
+    def __init__(self, **kwargs):
+        self.author = kwargs.pop("author", None)
+        self.publication_date = kwargs.pop("publication_date", None)
+        self.url = kwargs.pop("url", None)
+        self.koronawirus_in_title = kwargs.pop("koronawirus_in_title", None)
+        self.text_title = kwargs.pop("text_title", None)
+        self.covid_word_counter = kwargs.pop("covid_word_counter", None)
+        self.all_word_counter = kwargs.pop("all_word_counter", None)
+        self.question_mark_counter = kwargs.pop("question_mark_counter", None)
+        self.exclamation_mark_counte = kwargs.pop(
+            "exclamation_mark_counte", None)
 
 
 def extract_urls(text, current_service, current_url):
@@ -82,17 +97,17 @@ def parse_article(text, current_url, end_date=datetime(2020, 1, 1)):
 
     dismiss_the_ad_paragraphs(article)
 
-    date_and_author_container = article.find(
+    date_and_author = article.find(
         "div",
         {"class": "neck display-flex"}
     )
-    date = date_and_author_container.find(class_="h3 pub_time_date").text
-    date = datetime.strptime(date, "%Y-%m-%d")
+    publication_date = date_and_author.find(class_="h3 pub_time_date").text
+    publication_date = datetime.strptime(publication_date, "%Y-%m-%d")
 
-    if date < end_date:
-        print("Incorrect date: %s" % date)
+    if publication_date < end_date:
+        print(f"Incorrect date: {publication_date}")
 
-    elif date >= end_date:
+    elif publication_date >= end_date:
         title = container.find("div", {"class": "title"}).h1
         text_title = title.text
 
@@ -125,7 +140,7 @@ def parse_article(text, current_url, end_date=datetime(2020, 1, 1)):
             if word in string.punctuation:
                 all_word_counter -= 1
 
-        print(f"{date},"
+        print(f"{publication_date},"
               f"{text_title[:60]},"
               f"covid in title: {koronawirus_in_title},"
               f"covid word counter: {covid_word_counter},"
@@ -134,23 +149,38 @@ def parse_article(text, current_url, end_date=datetime(2020, 1, 1)):
               f"exclamation mark: {exclamation_mark_counter}")
 
         author = (
-            date_and_author_container.find("a")
-            or date_and_author_container.find_all("span")[4])
-
+            date_and_author.find("a")
+            or date_and_author.find_all("span")[4])
         author = author.text.strip() if author else "No author"
 
-        articles_api.update_articles(
-            connection,
-            author,
-            date,
-            current_url,
-            koronawirus_in_title,
-            text_title,
-            covid_word_counter,
-            all_word_counter,
-            question_mark_counter,
-            exclamation_mark_counter
+        A = Article(
+            author=author,
+            publication_date=publication_date,
+            url=current_url,
+            koronawirus_in_title=koronawirus_in_title,
+            text_title=text_title,
+            covid_word_counter=covid_word_counter,
+            all_word_counter=all_word_counter,
+            question_mark_counter=question_mark_counter,
+            exclamation_mark_counter=exclamation_mark_counter,
         )
+
+        return A
+
+
+def update_article(connection, article):
+    articles_api.update_articles(
+        connection,
+        article.author,
+        article.publication_date,
+        article.current_url,
+        article.koronawirus_in_title,
+        article.text_title,
+        article.covid_word_counter,
+        article.all_word_counter,
+        article.question_mark_counter,
+        article.exclamation_mark_counter
+    )
 
 
 if __name__ == "__main__":
@@ -163,16 +193,18 @@ if __name__ == "__main__":
         task = start_urls.pop(0)
         current_service = task["service"]
         current_url = task["start_url"]
+        response = None
 
         try:
             response = session.get(current_url, timeout=TIMEOUT)
-            extract_urls(response.text, current_service, current_url)
-
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             print(e)
+            continue
+        if not response.ok:
             continue
 
         try:
+            extract_urls(response.text, current_service, current_url)
             soup = BeautifulSoup(response.text, "lxml")
             pagination = soup.find("ul", {"class": "horizontal paginacja"})
             link = pagination.find("li", {"class": "next"})
@@ -180,7 +212,7 @@ if __name__ == "__main__":
             if link:
                 next_url = link.attrs.get("href")
                 next_url_counter += 1
-                print("%s page: %s" % (current_service, next_url_counter))
+                print(f"{current_service} page: {next_url_counter}")
                 if next_url_counter == 20:
                     continue
 
@@ -188,6 +220,7 @@ if __name__ == "__main__":
                 start_urls.append({"service": current_service,
                                    "start_url": next_url})
         except Exception as e:
+            # catching all exceptions to continue anyway
             print(e)
             continue
 
@@ -197,11 +230,17 @@ if __name__ == "__main__":
         task = urls.pop(0)
         current_service = task["service"]
         current_url = task["url"]
+        response = None
 
         try:
             response = session.get(current_url, timeout=TIMEOUT)
-            parse_article(response.text, current_url)
-
-        except Exception as e:
-            print(e)
+            article = parse_article(response.text, current_url)
+            if article:
+                update_article(article, current_url)
+        except (requests.exceptions.RequestException,
+                psycopg2.DatabaseError) as e:
+            print("SKIP", e)
             continue
+        except Exception as e:
+            print("ERROR", e)
+
