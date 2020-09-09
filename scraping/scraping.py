@@ -19,6 +19,14 @@ UA = (
 session = requests.Session()
 session.headers.update({"User-agent": UA})
 TIMEOUT = 60
+COVID_REGEX_PATTERN = re.compile(
+    r"(koronawirus|covid|epidemi|zakaże|pandemi|kwarantann|ozdrowieńc|zarazi|"
+    r"obostrze|żółta strefa|czerwona strefa|zakażon|zaraże|odkaża|zakażn|"
+    r"masecz(ka|ki|ek|kami)? ochronn(a|e|ych|ymi)|"
+    r"mas(ka|ki|ek|kami)? ochronn(a|e|ych|ymi)|"
+    r"rękawiczk(a|i|ami)? ochronn(a|e|ymi)|"
+    r"dezynfek|sars)", re.I
+)
 
 connection = create_connection()
 
@@ -36,7 +44,8 @@ def extract_urls(text, current_service, current_url):
             url = urljoin(current_url, url)
             url_components = {"url": url, "service": current_service}
             urls_api.add_urls(connection, url_components)
-        elif domain == "www.se.pl" and parsed.path == "/lublin":
+        #elif domain == "//www.se.pl" and parsed.path == "lublin":
+        elif url.startswith("//www.se.pl/lublin"):
             url = urljoin(current_url, url)
             url_components = {"url": url, "service": current_service}
             urls_api.add_urls(connection, url_components)
@@ -86,22 +95,13 @@ def parse_article(text, current_url, end_date=datetime(2020, 1, 1)):
     elif date >= end_date:
         title = container.find("div", {"class": "title"}).h1
         text_title = title.text
-        covid_regex_pattern = re.compile(r"(koronawirus|covid|epidemi|zakaże|pandemi|kwarantann|ozdrowieńc|zarazi|"
-                                         r"obostrze|żółta strefa|czerwona strefa|zakażon|zaraże|odkaża|zakażn|"
-                                         r"masecz(ka|ki|ek|kami)? ochronn(a|e|ych|ymi)|"
-                                         r"mas(ka|ki|ek|kami)? ochronn(a|e|ych|ymi)|"
-                                         r"rękawiczk(a|i|ami)? ochronn(a|e|ymi)|"
-                                         r"dezynfek|sars)", re.I)
 
-        covid_regex = title.find_all(text=covid_regex_pattern)
+        covid_regex = title.find_all(text=COVID_REGEX_PATTERN)
         koronawirus_in_title = len(covid_regex)
 
         text = article.find_all("p")
 
         article_text = []
-
-        question_mark_regex_pattern = re.compile(r'.*\?.*')
-        exclamation_mark_regex_pattern = re.compile(r'.*!.*')
 
         for item in text:
             article_text.append(item.text)
@@ -113,11 +113,11 @@ def parse_article(text, current_url, end_date=datetime(2020, 1, 1)):
         question_mark_counter = 0
         exclamation_mark_counter = 0
         for word in words_list:
-            if covid_regex_pattern.search(word):
+            if COVID_REGEX_PATTERN.search(word):
                 covid_word_counter += 1
-            if question_mark_regex_pattern.search(word):
+            if "?" in word:
                 question_mark_counter += 1
-            if exclamation_mark_regex_pattern.search(word):
+            if "!" in word:
                 exclamation_mark_counter += 1
 
             all_word_counter += 1
@@ -173,8 +173,8 @@ if __name__ == "__main__":
                 next_url = link.attrs.get("href")
                 next_url_counter += 1
                 print("%s page: %s" % (current_service, next_url_counter))
-                if next_url_counter == 2000:
-                    continue
+                # if next_url_counter == 2000:
+                #     continue
 
                 next_url = urljoin(current_url, next_url)
                 start_urls.append({"service": current_service, "start_url": next_url})
@@ -191,7 +191,7 @@ if __name__ == "__main__":
 
         try:
             response = session.get(current_url, timeout=TIMEOUT)
-            update_article(response.text, current_url)
+            parse_article(response.text, current_url)
 
         except Exception as e:
             print(e)
