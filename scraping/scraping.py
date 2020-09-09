@@ -42,8 +42,8 @@ class Article:
         self.covid_word_counter = kwargs.pop("covid_word_counter", None)
         self.all_word_counter = kwargs.pop("all_word_counter", None)
         self.question_mark_counter = kwargs.pop("question_mark_counter", None)
-        self.exclamation_mark_counte = kwargs.pop(
-            "exclamation_mark_counte", None)
+        self.exclamation_mark_counter = kwargs.pop(
+            "exclamation_mark_counter", None)
 
 
 def extract_urls(text, current_service, current_url):
@@ -171,15 +171,7 @@ def parse_article(text, current_url, end_date=datetime(2020, 1, 1)):
 def update_article(connection, article):
     articles_api.update_articles(
         connection,
-        article.author,
-        article.publication_date,
-        article.current_url,
-        article.koronawirus_in_title,
-        article.text_title,
-        article.covid_word_counter,
-        article.all_word_counter,
-        article.question_mark_counter,
-        article.exclamation_mark_counter
+        article
     )
 
 
@@ -236,7 +228,7 @@ if __name__ == "__main__":
             response = session.get(current_url, timeout=TIMEOUT)
             article = parse_article(response.text, current_url)
             if article:
-                update_article(article, current_url)
+                update_article(connection, article)
         except (requests.exceptions.RequestException,
                 psycopg2.DatabaseError) as e:
             print("SKIP", e)
