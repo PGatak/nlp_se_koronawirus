@@ -10,6 +10,7 @@ def get_start_urls(connection):
         cur.execute(stmt)
         return cur.fetchall()
 
+
 def get_urls(connection):
     stmt = (
         """
@@ -22,6 +23,7 @@ def get_urls(connection):
     with connection.cursor() as cur:
         cur.execute(stmt)
         return cur.fetchall()
+
 
 def add_urls(connection, url_components):
     stmt = (
