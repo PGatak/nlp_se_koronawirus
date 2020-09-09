@@ -59,7 +59,6 @@ def extract_urls(text, current_service, current_url):
             url = urljoin(current_url, url)
             url_components = {"url": url, "service": current_service}
             urls_api.add_urls(connection, url_components)
-        #elif domain == "//www.se.pl" and parsed.path == "lublin":
         elif url.startswith("//www.se.pl/lublin"):
             url = urljoin(current_url, url)
             url_components = {"url": url, "service": current_service}
@@ -205,8 +204,6 @@ if __name__ == "__main__":
                 next_url = link.attrs.get("href")
                 next_url_counter += 1
                 print(f"{current_service} page: {next_url_counter}")
-                if next_url_counter == 20:
-                    continue
 
                 next_url = urljoin(current_url, next_url)
                 start_urls.append({"service": current_service,
@@ -235,4 +232,3 @@ if __name__ == "__main__":
             continue
         except Exception as e:
             print("ERROR", e)
-
