@@ -139,8 +139,18 @@ def parse_article(text, current_url, end_date=datetime(2020, 1, 1)):
 
         author = author.text.strip() if author else "No author"
 
-        articles_api.update_articles(connection, author, date, current_url, koronawirus_in_title, text_title,
-                                 covid_word_counter, all_word_counter, question_mark_counter, exclamation_mark_counter)
+        articles_api.update_articles(
+            connection,
+            author,
+            date,
+            current_url,
+            koronawirus_in_title,
+            text_title,
+            covid_word_counter,
+            all_word_counter,
+            question_mark_counter,
+            exclamation_mark_counter
+        )
 
 
 if __name__ == "__main__":
@@ -163,7 +173,8 @@ if __name__ == "__main__":
             continue
 
         try:
-            pagination = BeautifulSoup(response.text, "lxml").find("ul", {"class": "horizontal paginacja"})
+            soup = BeautifulSoup(response.text, "lxml")
+            pagination = soup.find("ul", {"class": "horizontal paginacja"})
             link = pagination.find("li", {"class": "next"})
             link = link.find("a")
             if link:
@@ -174,7 +185,8 @@ if __name__ == "__main__":
                     continue
 
                 next_url = urljoin(current_url, next_url)
-                start_urls.append({"service": current_service, "start_url": next_url})
+                start_urls.append({"service": current_service,
+                                   "start_url": next_url})
         except Exception as e:
             print(e)
             continue
