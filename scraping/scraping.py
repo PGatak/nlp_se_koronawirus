@@ -133,14 +133,11 @@ def parse_article(text, current_url, end_date=datetime(2020, 1, 1)):
               f"question mark: {question_mark_counter},"
               f"exclamation mark: {exclamation_mark_counter}")
 
-        try:
-            author = date_and_author_container.find("a").text.strip()
+        author = (
+            date_and_author_container.find("a")
+            or date_and_author_container.find_all("span")[4])
 
-        except:
-            try:
-                author = date_and_author_container.find_all("span")[4].text.strip()
-            except:
-                author = "No author"
+        author = author.text.strip() if author else "No author"
 
         articles_api.update_articles(connection, author, date, current_url, koronawirus_in_title, text_title,
                                  covid_word_counter, all_word_counter, question_mark_counter, exclamation_mark_counter)
@@ -173,8 +170,8 @@ if __name__ == "__main__":
                 next_url = link.attrs.get("href")
                 next_url_counter += 1
                 print("%s page: %s" % (current_service, next_url_counter))
-                # if next_url_counter == 2000:
-                #     continue
+                if next_url_counter == 20:
+                    continue
 
                 next_url = urljoin(current_url, next_url)
                 start_urls.append({"service": current_service, "start_url": next_url})
