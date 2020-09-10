@@ -33,17 +33,25 @@ connection = create_connection()
 
 
 class Article:
-    def __init__(self, **kwargs):
-        self.author = kwargs.pop("author", None)
-        self.publication_date = kwargs.pop("publication_date", None)
-        self.url = kwargs.pop("url", None)
-        self.koronawirus_in_title = kwargs.pop("koronawirus_in_title", None)
-        self.text_title = kwargs.pop("text_title", None)
-        self.covid_word_counter = kwargs.pop("covid_word_counter", None)
-        self.all_word_counter = kwargs.pop("all_word_counter", None)
-        self.question_mark_counter = kwargs.pop("question_mark_counter", None)
-        self.exclamation_mark_counter = kwargs.pop(
-            "exclamation_mark_counter", None)
+    def __init__(self,
+                 author=None,
+                 publication_date=None,
+                 url=None,
+                 koronawirus_in_title=None,
+                 text_title=None,
+                 covid_word_counter=None,
+                 all_word_counter=None,
+                 question_mark_counter=None,
+                 exclamation_mark_counter=None):
+        self.author = author
+        self.publication_date = publication_date
+        self.url = url
+        self.koronawirus_in_title = koronawirus_in_title
+        self.text_title = text_title
+        self.covid_word_counter = covid_word_counter
+        self.all_word_counter = all_word_counter
+        self.question_mark_counter = question_mark_counter
+        self.exclamation_mark_counter = exclamation_mark_counter
 
 
 def extract_urls(text, current_service, current_url):
@@ -152,7 +160,7 @@ def parse_article(text, current_url, end_date=datetime(2020, 1, 1)):
             or date_and_author.find_all("span")[4])
         author = author.text.strip() if author else "No author"
 
-        A = Article(
+        article_object = Article(
             author=author,
             publication_date=publication_date,
             url=current_url,
@@ -164,7 +172,7 @@ def parse_article(text, current_url, end_date=datetime(2020, 1, 1)):
             exclamation_mark_counter=exclamation_mark_counter,
         )
 
-        return A
+        return article_object
 
 
 def update_article(connection, article):
