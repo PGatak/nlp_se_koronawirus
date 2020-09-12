@@ -1,5 +1,7 @@
 # nlp_se_koronawirus
 
+An article was created on the basis of this project and is available here:
+https://www.linkedin.com/pulse/koronawirus-tematem-nr-1-regionalnych-serwis%C3%B3w-sepl-na-gatak/
 
 **Step 1:**
 Create a postgres database. In the terminal, enter the command: "make initdb". The command will delete the database 
