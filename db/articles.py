@@ -17,3 +17,16 @@ def update_articles(connection, article):
         cur.execute(stmt, article.__dict__)
         cur.connection.commit()
         return cur.fetchall()
+
+
+def get_articles(connection):
+    stmt = (
+        """
+        SELECT *
+        FROM urls
+        """
+    )
+
+    with connection.cursor() as cur:
+        cur.execute(stmt)
+        return cur.fetchall()
