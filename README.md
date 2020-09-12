@@ -2,19 +2,21 @@
 
 
 **Step 1:**
-Create a database. In the terminal, enter the command: "make initdb". The command will delete the database 
-(DBNAME = nlp_se_koronawisus_sql) if it exists, then create a new database and create the database schema.
+Create a postgres database. In the terminal, enter the command: "make initdb". The command will delete the database 
+(DBNAME = nlp_se_koronawisus_sql) if it exists, then create a new database and create the database schema. 
+Database schema is in "sql/schema.sql"
 
 **Step 2:**
 Open the "scraping/start_urls.py" file and see which local sites will be checked.
 
 **Step 3:**
 Run the file "scraping/scraping.py" and download the data from the website. The data will be saved in the postgres
-database. Set the end update date for the articles (upgrade_article (end_date)). By default, the date is set to 2020.01.01
+database. Set the end update date for the articles (upgrade_article (end_date)). 
+By default, the date is set to 2020.01.01
 
 **Step 4:**
-Run the Jupyter Notebook file "data_cleaning.ipynb". Get data from database. Clean data and save to 
-"datasets/1_clean_data.csv" file.
+Run the Jupyter Notebook file "data_cleaning.ipynb". Get data from database. 
+Clean data and save to "datasets/1_clean_data.csv" file.
 
 **Step 5:**
 Run the Jupyter Notebook file "data_analysis_and_visualization.ipynb". You will get the data:
@@ -46,5 +48,8 @@ Run the Jupyter Notebook file "data_analysis_and_visualization.ipynb". You will 
 
 **Step 6:**
 Run the Jupyter Notebook file "nlp_cleaning.ipynb". 
+
+**Step 7:**
+Run the Jupyter Notebook file "nlp_exploratory_data_analysis.ipynb". 
 
 
